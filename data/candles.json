@@ -1,0 +1,13 @@
+{
+    "VELA001": {
+        "aroma": "Vainilla",
+        "discount": 15,
+        "synonyms": ["vainilla clásica"]
+    },
+    "VELA002": { "aroma": "Lavanda", "discount": 15, "synonyms": ["lavandín"] },
+    "VELA003": {
+        "aroma": "Coco con limón",
+        "discount": 15,
+        "synonyms": ["coco limon", "coco y limón"]
+    }
+}

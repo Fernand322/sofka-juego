@@ -1,0 +1,13 @@
+[functions]
+  directory = "functions"
+  node_bundler = "esbuild"
+
+# Ruta amigable para tu API
+[[redirects]]
+  from = "/api/validate"
+  to = "/.netlify/functions/validate"
+  status = 200
+
+# Publicar el front desde /public
+[build]
+  publish = "public"

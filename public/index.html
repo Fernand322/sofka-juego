@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Sofka | Adiviná tu aroma</title>
+        <meta name="theme-color" content="#f7f3ee" />
+        <style>
+            :root {
+                --bg: #f7f3ee;
+                --card: #ffffff;
+                --ink: #2a2a2a;
+                --muted: #666;
+                --brand: #b38b59; /* dorado suave */
+                --ok: #2e7d32;
+                --err: #b00020;
+                --shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+                --radius: 18px;
+            }
+            html,
+            body {
+                height: 100%;
+            }
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                background: var(--bg);
+                color: var(--ink);
+                font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI,
+                    Roboto, "Helvetica Neue", Arial, "Apple Color Emoji",
+                    "Segoe UI Emoji";
+                display: grid;
+                place-items: center;
+                padding: 24px;
+            }
+            .shell {
+                width: min(680px, 100%);
+            }
+            .card {
+                background: var(--card);
+                border-radius: var(--radius);
+                box-shadow: var(--shadow);
+                padding: 28px;
+                position: relative;
+                overflow: hidden;
+            }
+            .brand {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 8px;
+            }
+            .logo {
+                width: 42px;
+                height: 42px;
+                border-radius: 50%;
+                background: #e9e1d6;
+                display: grid;
+                place-items: center;
+                font-weight: 700;
+                color: var(--brand);
+                box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.08);
+            }
+            .logo img {
+                width: 70%;
+                height: 70%;
+                object-fit: contain;
+                display: block;
+            }
+            h1 {
+                font-size: 1.6rem;
+                margin: 6px 0 10px;
+                letter-spacing: 0.2px;
+            }
+            p.lead {
+                color: var(--muted);
+                margin: 0 0 20px;
+            }
+
+            .badge {
+                display: inline-block;
+                font-size: 0.78rem;
+                border: 1px solid #e7ded3;
+                padding: 6px 10px;
+                border-radius: 999px;
+                color: #7a6a54;
+                background: #fbf8f4;
+            }
+            .row {
+                display: grid;
+                gap: 14px;
+                grid-template-columns: 1fr;
+            }
+
+            label {
+                font-size: 0.9rem;
+                color: #4a4a4a;
+            }
+            input[type="text"],
+            select,
+            button {
+                width: 100%;
+                border: 1px solid #e7e1da;
+                background: #fff;
+                color: var(--ink);
+                padding: 14px 14px;
+                border-radius: 12px;
+                font-size: 1rem;
+                outline: none;
+                transition: box-shadow 0.2s ease, border-color 0.2s ease,
+                    transform 0.02s ease;
+                max-width: 100%;
+                display: block;
+            }
+            input[type="text"]:focus {
+                border-color: var(--brand);
+                box-shadow: 0 0 0 4px rgba(179, 139, 89, 0.12);
+            }
+            button {
+                background: var(--brand);
+                color: #fff;
+                border-color: transparent;
+                font-weight: 600;
+                cursor: pointer;
+            }
+
+            button.full {
+                width: 100%;
+                margin-top: 12px;
+            }
+
+            button:hover {
+                filter: brightness(0.97);
+            }
+            button:active {
+                transform: translateY(1px);
+            }
+
+            .hint {
+                color: var(--muted);
+                font-size: 0.9rem;
+            }
+            .footer-note {
+                color: var(--muted);
+                font-size: 0.84rem;
+                text-align: center;
+                margin-top: 12px;
+            }
+
+            .status {
+                margin-top: 14px;
+                padding: 14px;
+                border-radius: 12px;
+                border: 1px solid #eee;
+            }
+            .status.ok {
+                background: #edf7ee;
+                border-color: #d6ead8;
+                color: var(--ok);
+            }
+            .status.err {
+                background: #fdebec;
+                border-color: #f5c7cd;
+                color: var(--err);
+            }
+
+            .codebox {
+                display: grid;
+                grid-template-columns: 1fr auto;
+                gap: 10px;
+                margin-top: 10px;
+            }
+            .codebox input {
+                font-family: ui-monospace, SFMono-Regular, Menlo, Monaco,
+                    Consolas, "Liberation Mono", monospace;
+                font-weight: 700;
+                letter-spacing: 0.5px;
+                text-align: center;
+            }
+
+            .divider {
+                height: 1px;
+                background: #eee;
+                margin: 16px 0;
+            }
+
+            .topbar {
+                position: absolute;
+                inset: 0 0 auto 0;
+                height: 7px;
+                background: linear-gradient(90deg, #e5d8c4, #b38b59, #e5d8c4);
+                opacity: 0.7;
+            }
+
+            .pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 12px;
+                border-radius: 999px;
+                background: #f7efe5;
+                border: 1px solid #eadfd1;
+                color: #6a5941;
+                font-size: 0.86rem;
+            }
+            .grid2 {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            @media (min-width: 560px) {
+                /* .row {
+                    grid-template-columns: 1fr auto;
+                    align-items: end;
+                }*/
+                .grid2 {
+                    grid-template-columns: 1fr 1fr;
+                }
+            }
+
+            /* Confetti (simple) */
+            .confetti {
+                pointer-events: none;
+                position: fixed;
+                inset: 0;
+                overflow: hidden;
+            }
+            .confetti i {
+                position: absolute;
+                width: 8px;
+                height: 14px;
+                background: var(--brand);
+                opacity: 0.9;
+                top: -20px;
+                animation: fall 2.8s linear forwards;
+            }
+            @keyframes fall {
+                to {
+                    transform: translateY(110vh) rotate(360deg);
+                    opacity: 1;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="shell">
+            <div class="card" role="region" aria-labelledby="title">
+                <div class="topbar"></div>
+                <div class="brand">
+                    <div class="logo" aria-hidden="true">
+                        <img id="sofkaLogo" src="sofka_logo.svg" alt="Sofka" />
+                    </div>
+                    <div>
+                        <div class="badge">Juego Sofka</div>
+                        <h1 id="title">Adiviná tu aroma</h1>
+                    </div>
+                </div>
+                <p class="lead">
+                    Escaneaste el QR de tu vela. Tenés
+                    <strong>un solo intento</strong> para adivinar el aroma. ¡Si
+                    acertás, te llevás un descuento para tu próxima compra! ✨
+                </p>
+
+                <!-- <div
+                    class="pill"
+                    id="idPill"
+                    title="Identificador de tu vela"
+                    aria-live="polite"
+                >
+                    Cargando ID…
+                </div>  -->
+
+                <div class="divider"></div>
+
+                <form id="gameForm" autocomplete="off">
+                    <div class="row">
+                        <div>
+                            <label for="guess">¿Qué aroma creés que es?</label>
+                            <input
+                                id="guess"
+                                name="guess"
+                                type="text"
+                                list="aromas"
+                                placeholder="Ej.: Vainilla, Lavanda, Coco con limón…"
+                                required
+                            />
+                            <datalist id="aromas"></datalist>
+                            <div class="hint">
+                                Consejo: escribí el aroma tal como lo percibís.
+                                No sensibles a mayúsculas/acentos.
+                            </div>
+                            <button type="submit" id="submitBtn" class="full">
+                                Enviar respuesta
+                            </button>
+                        </div>
+                    </div>
+                    <div id="status" class="status" hidden></div>
+                </form>
+
+                <div class="grid2" style="margin-top: 16px">
+                    <div>
+                        <div class="hint">
+                            ¿No sabés qué es un <strong>ID de vela</strong>?
+                            Está impreso en la base o etiqueta interna. El QR ya
+                            lo trae.
+                        </div>
+                    </div>
+                    <div class="hint" style="text-align: right">
+                        Instagram:
+                        <a
+                            href="https://instagram.com/sofka.oficial"
+                            target="_blank"
+                            rel="noopener"
+                            >@sofka.oficial</a
+                        >
+                    </div>
+                </div>
+
+                <p class="footer-note">
+                    Privacidad: guardamos localmente que ya jugaste para esta
+                    vela, evitando intentos repetidos.
+                </p>
+            </div>
+        </div>
+
+        <div class="confetti" id="confetti" aria-hidden="true"></div>
+
+        <script>
+            // Lista completa (para sugerencias). Podés agregar aquí tus aromas comerciales.
+            const AROMA_SUGGESTIONS = [
+                "Vainilla",
+                "Lavanda",
+                "Coco",
+                "Coco con limón",
+                "Cítricos",
+                "Frutos rojos",
+                "Sandía",
+                "Jazmín",
+                "Rosa",
+                "Naranja y canela",
+                "Eucalipto",
+                "Tilo",
+                "Café",
+                "Chocolate",
+                "Manzana canela",
+                "Verbatim",
+                "Flor de azahar",
+            ];
+
+            // Duración de validez del código en días
+            const DISCOUNT_VALID_DAYS = 7;
+
+            // ======== UTILIDADES ========
+            const $ = (q) => document.querySelector(q);
+            const $$ = (q) => document.querySelectorAll(q);
+
+            function getParam(name) {
+                const url = new URL(window.location.href);
+                return url.searchParams.get(name);
+            }
+
+            function normalize(str) {
+                return (str || "")
+                    .toString()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "") // remove diacritics
+                    .replace(/\s+/g, " ")
+                    .trim()
+                    .toLowerCase();
+            }
+
+            function fmtDate(d) {
+                return d.toLocaleDateString("es-AR", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                });
+            }
+
+            function randomCode(len = 5) {
+                return Math.random()
+                    .toString(36)
+                    .slice(2, 2 + len)
+                    .toUpperCase();
+            }
+
+            function genDiscountCode(id) {
+                return `SOFKA-${id}-${randomCode(6)}`;
+            }
+
+            function setStatus(kind, html) {
+                const box = $("#status");
+                box.hidden = false;
+                box.className = "status " + (kind === "ok" ? "ok" : "err");
+                box.innerHTML = html;
+            }
+
+            function confetti() {
+                const root = $("#confetti");
+                root.innerHTML = "";
+                const colors = [
+                    "#b38b59",
+                    "#e5d8c4",
+                    "#8c6a3d",
+                    "#f0e6d6",
+                    "#d9c4a8",
+                ];
+                for (let i = 0; i < 120; i++) {
+                    const p = document.createElement("i");
+                    p.style.left = Math.random() * 100 + "vw";
+                    p.style.background = colors[i % colors.length];
+                    p.style.animationDelay = Math.random() * 0.8 + "s";
+                    p.style.transform = `rotate(${Math.random() * 360}deg)`;
+                    root.appendChild(p);
+                }
+                setTimeout(() => (root.innerHTML = ""), 3200);
+            }
+
+            function loadSuggestions() {
+                const dl = $("#aromas");
+                AROMA_SUGGESTIONS.forEach((a) => {
+                    const o = document.createElement("option");
+                    o.value = a;
+                    dl.appendChild(o);
+                });
+            }
+
+            // ======== LÓGICA DEL JUEGO ========
+            const candleId = getParam("id");
+
+            /*function hydrateIdPill() {
+                const pill = $("#idPill");
+                if (!candleId) {
+                    pill.textContent =
+                        "ID no encontrado (usá un QR con ?id=...)";
+                    return;
+                }
+                // Mostrar parcialmente para no revelar todo si compartís pantalla
+                const shortId =
+                    candleId.length > 6
+                        ? `${candleId.slice(0, 4)}…${candleId.slice(-2)}`
+                        : candleId;
+                pill.textContent = `ID de vela: ${shortId}`;
+            }*/
+
+            function alreadyPlayedKey(id) {
+                return `sofka_guess_${id}`;
+            }
+            function prizeKey(id) {
+                return `sofka_prize_${id}`;
+            }
+
+            function loadPreviousAttempt() {
+                if (!candleId) return null;
+                try {
+                    return JSON.parse(
+                        localStorage.getItem(alreadyPlayedKey(candleId))
+                    );
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function saveAttempt(result) {
+                if (!candleId) return;
+                localStorage.setItem(
+                    alreadyPlayedKey(candleId),
+                    JSON.stringify(result)
+                );
+            }
+
+            function savePrize(prize) {
+                if (!candleId) return;
+                localStorage.setItem(prizeKey(candleId), JSON.stringify(prize));
+            }
+
+            function loadPrize() {
+                if (!candleId) return null;
+                try {
+                    return JSON.parse(localStorage.getItem(prizeKey(candleId)));
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function validateGuess(guess, record) {
+                const g = normalize(guess);
+                const target = normalize(record.aroma);
+                if (g === target) return true;
+                if (Array.isArray(record.synonyms)) {
+                    return record.synonyms.map(normalize).includes(g);
+                }
+                return false;
+            }
+
+            function renderExistingState() {
+                const prior = loadPreviousAttempt();
+                const prize = loadPrize();
+                if (!prior) return; // nada previo
+                $("#guess").disabled = true;
+                $("#submitBtn").disabled = true;
+                if (prior.correct && prize) {
+                    const exp = new Date(prize.expiresAt);
+                    setStatus(
+                        "ok",
+                        `
+          🎉 Ya habías acertado este aroma. ¡Tu premio sigue disponible!<br>
+          Código de descuento:
+          <div class="codebox">
+            <input id="codeInput" type="text" readonly value="${prize.code}" />
+            <button type="button" id="copyBtn">Copiar</button>
+          </div>
+          <div class="hint">Válido hasta <strong>${fmtDate(
+              exp
+          )}</strong> (inclusive). Mostralo al comprar en Sofka.</div>
+        `
+                    );
+                    attachCopy();
+                } else {
+                    setStatus(
+                        "err",
+                        `🙃 Ya jugaste con esta vela. El intento es único. ¡Gracias por participar!`
+                    );
+                }
+            }
+
+            function attachCopy() {
+                const copyBtn = $("#copyBtn");
+                const codeInput = $("#codeInput");
+                if (copyBtn && codeInput) {
+                    copyBtn.addEventListener("click", async () => {
+                        await navigator.clipboard.writeText(codeInput.value);
+                        copyBtn.textContent = "¡Copiado!";
+                        setTimeout(
+                            () => (copyBtn.textContent = "Copiar"),
+                            1200
+                        );
+                    });
+                }
+            }
+
+            async function onSubmit(ev) {
+                ev.preventDefault();
+                const id = getParam("id");
+                if (!id) {
+                    setStatus(
+                        "err",
+                        "No se encontró un ID de vela. Escaneá un QR válido."
+                    );
+                    return;
+                }
+
+                const guess = $("#guess").value;
+                if (!guess) {
+                    setStatus("err", "Ingresá un aroma para jugar.");
+                    return;
+                }
+
+                try {
+                    const res = await fetch("/api/validate", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            id,
+                            guess /*, sig: 'opcional-luego' */,
+                        }),
+                    });
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        setStatus("err", data.error || "Error de validación");
+                        return;
+                    }
+
+                    // Bloqueo reintento local (seguís usando tu localStorage)
+                    const attempt = {
+                        at: Date.now(),
+                        guess,
+                        correct: !!data.ok,
+                    };
+                    saveAttempt(attempt);
+
+                    if (data.ok) {
+                        savePrize({
+                            code: data.code,
+                            percent: data.discount,
+                            expiresAt: data.expiresAt,
+                        });
+                        confetti();
+                        setStatus(
+                            "ok",
+                            `
+        ✨ ¡Acertaste!<br>
+        Tu premio: <strong>${data.discount}% OFF</strong>
+        <div class="codebox">
+          <input id="codeInput" type="text" readonly value="${data.code}" />
+          <button type="button" id="copyBtn">Copiar</button>
+        </div>
+        <div class="hint">Válido hasta <strong>${fmtDate(
+            new Date(data.expiresAt)
+        )}</strong>.</div>
+      `
+                        );
+                        attachCopy();
+                        $("#guess").disabled = true;
+                        $("#submitBtn").disabled = true;
+                    } else {
+                        setStatus(
+                            "err",
+                            `No acertaste esta vez. ¡Gracias por jugar!`
+                        );
+                        $("#guess").disabled = true;
+                        $("#submitBtn").disabled = true;
+                    }
+                } catch (e) {
+                    setStatus("err", "Error de conexión: " + e.message);
+                }
+            }
+
+            function ensureIdExists() {
+                if (!candleId) {
+                    setStatus(
+                        "err",
+                        "Falta el parámetro ?id= en la URL. Sugerencia: probá <code>?id=VELA123</code> para demo."
+                    );
+                }
+            }
+
+            // ======== INICIO ========
+            loadSuggestions();
+            //hydrateIdPill();
+            ensureIdExists();
+
+            // Si el ID existe y está en catálogo pero ya jugó, mostrar estado
+            if (candleId) {
+                renderExistingState();
+            }
+
+            $("#gameForm").addEventListener("submit", onSubmit);
+
+            // Acceso rápido para probar en local sin QR:
+            // Abrí index.html?id=VELA123
+        </script>
+
+        <!--
+  ==================== NOTAS PARA PRODUCCIÓN ====================
+  • Esta versión es 100% estática (frontend). Para impedir que alguien 
+    vea los aromas mirando el código, migrá la validación al servidor.
+  • Opción simple: publicar un endpoint (Cloudflare Workers / Firebase / Apps Script)
+    que reciba { id, guess } y devuelva { ok, discount, code }.
+  • Si usás tienda (Tiendanube/Shopify), creá cupones con prefijo SOFKA- y validalos a mano
+    o a través de la API de tu plataforma.
+  ================================================================
+  -->
+    </body>
+</html>
