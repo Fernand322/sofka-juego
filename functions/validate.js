@@ -9,7 +9,7 @@ let CATALOG = null; // cache en memoria (por instancia)
 
 function loadCatalog() {
     if (CATALOG) return CATALOG;
-    const file = path.join(__dirname, "..", "data", "candles.json");
+    const file = path.join(__dirname, "candles.json");
     CATALOG = JSON.parse(fs.readFileSync(file, "utf8"));
     return CATALOG;
 }
